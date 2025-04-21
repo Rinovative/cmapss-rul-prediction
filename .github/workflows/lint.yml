@@ -1,0 +1,37 @@
+name: Linting
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.12
+
+    - name: Install Poetry
+      run: pip install poetry
+
+    - name: Install Dependencies
+      run: poetry install --with dev
+
+    - name: Run isort
+      run: poetry run isort --check --diff --profile black .
+
+    - name: Run black
+      run: poetry run black --check --diff --line-length=150 . --exclude ".*\.ipynb"
+
+    - name: Run flake8
+      run: poetry run flake8 --max-line-length=150 --ignore=E203,W503 --exclude=".venv,__pycache__,.pytest_cache,_safe"
+
+    # - name: Run basedpyright
+    #   run: poetry run basedpyright --level error
+
+    - name: Run complexipy
+      run: poetry run complexipy . --max-complexity 25

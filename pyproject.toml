@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "cmapss-rul-prediction"
+version = "0.1.0"
+description = "Predictive Maintenance: Vorhersage der verbleibenden Nutzungsdauer (RUL) von Triebwerken"
+authors = ["Rino Albertin <rino.albertin@ost.ch>"]
+readme = "README.md"
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pandas = "^2.2.3"
+matplotlib = "^3.10.1"
+scikit-learn = "^1.6.1"
+seaborn = "^0.13.2"
+jupyter = "^1.1.1"
+notebook = "^7.3.3"
+plotly = "^6.0.1"
+scipy = "^1.15.2"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^6.0.1"
+black = "^25.1.0"
+flake8 = "^7.2.0"
+basedpyright = "^1.28.4"
+complexipy = "^1.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+linting = "src.util.poetry.poetry_lint:main"

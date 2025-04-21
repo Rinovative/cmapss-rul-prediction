@@ -54,6 +54,12 @@ Eine interaktive Notebook-Dokumentation mit zahlreichen Visualisierungen erlaubt
 ```bash
 .
 ├── .github/              # GitHub Actions (CI)
+├── cache/                # Zwischengespeicherte Ergebnisse (Plots, Clusterlabels etc.)
+│   ├── fd001/                  
+│   ├── fd002/                  
+│   ├── fd003/                  
+│   ├── fd004/                  
+│   └── fdall/
 ├── data/                 # Originaldaten
 │   └── raw/              # Unverarbeitete C-MAPSS-Dateien
 ├── images/               # Grafiken (z. B. Triebwerksdiagramm)

@@ -157,7 +157,7 @@ def plot_sensor_correlation_matrix(df: pd.DataFrame, sensor_cols=None, annot=Fal
     else:
         sns.heatmap(corr, cmap="coolwarm", vmin=-1, vmax=1, annot=annot, fmt=".2f", ax=ax)
         ax.set_title(title)
-        return ax
+        return ax.figure
 
 
 def plot_sensor_box_violin_last_cycle(df, sensor_cols=None, dataset_name: str = ""):

@@ -7,7 +7,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
-from ..util import cache_plot
+from ..util import cache_plot_pickle
 
 
 def plot_tsne_dbscan_clusters(
@@ -74,7 +74,7 @@ def plot_tsne_dbscan_clusters(
         return fig, labels_db
 
     # Anwendung des Caching-Systems
-    return cache_plot(
+    return cache_plot_pickle(
         _plot_tsne_dbscan_clusters_internal,
         df,
         dataset_name,

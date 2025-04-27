@@ -32,7 +32,7 @@ def save_object(obj, path: str):
         raise ValueError(f"Unsupported extension: {ext}")
 
 
-def load_object(path: str):
+def _load_object(path: str):
     """
     Lädt ein Objekt (z.B. Figure, Labels) von einem angegebenen Pfad.
     """
@@ -43,13 +43,12 @@ def load_object(path: str):
         with open(path, "rb") as f:
             return pickle.load(f)
     elif ext == ".png":
-        # Lade das Bild zurück, aber als Figure-Objekt
-        return plt.imread(path)  # Dies wird das Bild laden, aber als Numpy-Array zurückgeben
+        return plt.imread(path)
     else:
         raise ValueError(f"Unsupported extension: {ext}")
 
 
-def cache_plot(plot_func, df, dataset_name, kind, force_recompute=False, *args, **kwargs):
+def cache_plot_pickle(plot_func, df, dataset_name, kind, force_recompute=False, *args, **kwargs):
     """
     Versucht, ein gespeichertes Plot-Objekt aus dem Cache zu laden.
     Falls es nicht existiert oder das Neuberechnen erzwungen wird, wird das Plot neu berechnet, gespeichert und zurückgegeben.
@@ -73,13 +72,11 @@ def cache_plot(plot_func, df, dataset_name, kind, force_recompute=False, *args, 
     if not force_recompute:
         if os.path.exists(fig_cache_path) and os.path.exists(labels_cache_path):
             # Lade das gespeicherte Plot und die Labels
-            print(f"Loading cached plot and labels for {dataset_name}...")
-            fig = load_object(fig_cache_path)  # Lade das komplette Figure-Objekt
-            labels = load_object(labels_cache_path)
+            fig = _load_object(fig_cache_path)  # Lade das komplette Figure-Objekt
+            labels = _load_object(labels_cache_path)
             return fig, labels
 
     # Wenn der Plot neu berechnet werden muss, führe die Plot-Funktion aus
-    print(f"Recomputing plot and labels for {dataset_name}...")
     fig, labels = plot_func(df, dataset_name, *args, **kwargs)
 
     # Speichere das Plot und die Labels im Cache
@@ -87,3 +84,32 @@ def cache_plot(plot_func, df, dataset_name, kind, force_recompute=False, *args, 
     save_object(labels, labels_cache_path)
 
     return fig, labels
+
+def cache_all_plots(plot_lists, dataset_name, force_recompute=False):
+    """
+    Berechnet und cached alle Plots für eine gegebene Liste von Plotfunktionen.
+
+    Für jede Plotfunktion in den übergebenen Listen wird geprüft, ob ein gecachter Plot bereits vorhanden ist.
+    Falls nicht (oder falls force_recompute=True), wird die Plotfunktion ausgeführt, das Ergebnis als PNG gespeichert
+    und die Figure geschlossen.
+
+    Args:
+        plot_lists (list): Liste von Plotlisten. Jede Plotliste enthält Tripel (title, func, plot_name).
+        dataset_name (str): Name des Datensatzes (wird für den Cache-Pfad verwendet).
+        force_recompute (bool): Wenn True, werden alle Plots neu berechnet, auch wenn sie bereits gecacht sind.
+    """
+    for plot_list in plot_lists:
+        for title, func, plot_name in plot_list:
+            png_path = get_cache_path(dataset_name.lower(), "figures", plot_name, "png")
+            if force_recompute or not os.path.exists(png_path):
+                plt.ioff()
+                result = func()
+                if isinstance(result, tuple):
+                    result = result[0]
+                if isinstance(result, plt.Axes):
+                    result = result.figure
+                if isinstance(result, plt.Figure):
+                    save_object(result, png_path)
+                    plt.close(result)
+                plt.close("all")
+                plt.ion()

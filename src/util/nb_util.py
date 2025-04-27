@@ -3,7 +3,7 @@ import os
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
-from IPython.display import Image, display
+from IPython.display import Image, clear_output, display
 
 from src.util import cache_util
 
@@ -120,19 +120,42 @@ def make_toggle_shortcut(df, dataset_name):
     return toggle
 
 
-def create_standard_tabs(sections):
+def make_lazy_panel_with_tabs(sections, tab_titles=None, open_btn_text="Bereich öffnen", close_btn_text="Schliessen"):
     """
-    Gibt das Haupt-Tab-Widget zurück. Jeder Tab enthält eine Dropdown-Auswahl für die jeweilige Kategorie.
+    Erstellt ein Widget mit Öffnen-Button, Tabs (mit beliebigen Widgets), und Schliessen-Button oben.
+    Args:
+        sections (list): Liste von Widgets (z.B. Dropdown-Panels, Plots, andere Panellayouts)
+        tab_titles (list, optional): Titel für die Tabs. Default: "Tab 1", "Tab 2", ...
+        open_btn_text (str): Text für den Öffnen-Button.
+        close_btn_text (str): Text für den Schliessen-Button.
+    Returns:
+        ipywidgets.Output: Widget, das ins Notebook eingefügt werden kann.
     """
+    main_out = widgets.Output()
+    open_btn = widgets.Button(description=open_btn_text, button_style="primary")
+    close_btn = widgets.Button(description=close_btn_text, button_style="danger")
+
     tabs = widgets.Tab(children=sections)
-    default_titles = [
-        "1. Übersicht",
-        "2. Operation Settings",
-        "3. Sensoren",
-        "4. Klassifizierung",
-        "5. Clusteranalyse",
-    ]
-    for i, section in enumerate(sections):
-        title = default_titles[i] if i < len(default_titles) else f"Tab {i + 1}"
-        tabs.set_title(i, title)
-    return tabs
+    if tab_titles is not None:
+        for i, title in enumerate(tab_titles):
+            tabs.set_title(i, title)
+    else:
+        for i in range(len(sections)):
+            tabs.set_title(i, f"Tab {i + 1}")
+
+    panel = widgets.VBox([close_btn, tabs])
+
+    def show_panel(_=None):
+        with main_out:
+            clear_output()
+            display(panel)
+
+    def show_open(_=None):
+        with main_out:
+            clear_output()
+            display(open_btn)
+
+    open_btn.on_click(show_panel)
+    close_btn.on_click(show_open)
+    show_open()
+    return main_out

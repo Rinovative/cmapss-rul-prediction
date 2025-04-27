@@ -1,5 +1,5 @@
 # flake8: noqa
-from .cache_util import cache_plot_pickle, get_cache_path, save_object, cache_all_plots
+from .cache_util import cache_all_plots, cache_plot_pickle, get_cache_path, save_object
 from .data_loader import load_cmapss_data
 from .nb_util import (
     create_standard_tabs,

@@ -1,10 +1,12 @@
 import os
+
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
-from IPython.display import Image, display
 import plotly.graph_objs as go
+from IPython.display import Image, display
 
 from src.util import cache_util
+
 
 def _sanitize_name(name: str) -> str:
     """
@@ -22,6 +24,7 @@ def _sanitize_name(name: str) -> str:
         str: Sanitized Plotname.
     """
     return name.lower().replace(" ", "_").replace("–", "-").replace("—", "-").replace("/", "_")
+
 
 def _show_anything(result, fallback_path=None):
     """
@@ -59,9 +62,7 @@ def make_dropdown_section(plots, dataset_name, description="Plot:"):
     plots: Liste von (Titel, plot_func, plot_name)
     """
     dropdown = widgets.Dropdown(
-        options=[(title, i) for i, (title, _, _) in enumerate(plots)],
-        description=description,
-        style={"description_width": "initial"}
+        options=[(title, i) for i, (title, _, _) in enumerate(plots)], description=description, style={"description_width": "initial"}
     )
     output = widgets.Output()
     last_idx = {"idx": None}
@@ -96,6 +97,7 @@ def make_dropdown_section(plots, dataset_name, description="Plot:"):
 
     return widgets.VBox([dropdown, output])
 
+
 def make_toggle_shortcut(df, dataset_name):
     """
     Gibt eine Funktion zurück, mit der Dropdown-Plots erstellt werden können:
@@ -116,6 +118,7 @@ def make_toggle_shortcut(df, dataset_name):
         return (title, lambda: func(df=df, **kwargs), plot_name)
 
     return toggle
+
 
 def create_standard_tabs(sections):
     """

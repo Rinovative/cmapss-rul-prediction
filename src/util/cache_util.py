@@ -85,6 +85,7 @@ def cache_plot_pickle(plot_func, df, dataset_name, kind, force_recompute=False, 
 
     return fig, labels
 
+
 def cache_all_plots(plot_lists, dataset_name, force_recompute=False):
     """
     Berechnet und cached alle Plots für eine gegebene Liste von Plotfunktionen.

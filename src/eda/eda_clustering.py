@@ -88,6 +88,37 @@ def plot_tsne_dbscan_clusters(
     )
 
 
+def plot_op_settings_vs_cluster(
+    df: pd.DataFrame,
+    cluster_col: str = "cluster_tsne",
+    dataset_name: str = "",
+) -> plt.Figure:
+    """
+    Plottet die Verteilung der drei op_settings je Cluster in drei übereinanderliegenden Subplots.
+
+    Args:
+        df (pd.DataFrame): DataFrame mit 'op_setting_1', 'op_setting_2', 'op_setting_3' und Clusterzuweisung.
+        cluster_col (str): Name der Spalte mit Clusterlabels.
+        dataset_name (str): Optionaler Titelzusatz für Plot-Titel und Caching.
+
+    Returns:
+        matplotlib.figure.Figure: Die erzeugte Figure.
+    """
+    fig, axs = plt.subplots(3, 1, figsize=(18, 10), sharex=True)
+    op_settings = ["op_setting_1", "op_setting_2", "op_setting_3"]
+
+    for i, setting in enumerate(op_settings):
+        sns.boxplot(data=df, x=cluster_col, y=setting, ax=axs[i])
+        axs[i].set_title(setting)
+        axs[i].set_ylabel("Wert")
+        axs[i].grid(True)
+
+    axs[-1].set_xlabel("Cluster")
+    fig.suptitle(f"Verteilung der Operation Settings je Cluster{f' ({dataset_name})' if dataset_name else ''}", fontsize=14)
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    return fig
+
+
 def plot_lifetime_boxplot_by_cluster(df: pd.DataFrame, cluster_col: str = "cluster_tsne") -> plt.Figure:
     """
     Erstellt ein Boxplot der Lebensdauer (time) pro Cluster.
@@ -168,9 +199,9 @@ def plot_mean_normalized_sensors_by_cluster(
 
     fig, ax = plt.subplots(figsize=(18, 8))
     df_grouped.plot(kind="bar", ax=ax)
-    ax.set_title(f"Mean Normalized Sensor Values by Cluster {f'({dataset_name})' if dataset_name else ''}")
+    ax.set_title(f"Mittlere normalisierte Sensorwerte nach Cluster {f'({dataset_name})' if dataset_name else ''}")
     ax.set_xlabel("Cluster")
-    ax.set_ylabel("Mean Normalized Sensor Value")
+    ax.set_ylabel("Mittlerer normalisierter Sensorwert")
     ax.legend(title="Sensors", bbox_to_anchor=(1.05, 1), loc="upper left")
     ax.grid(True)
     plt.tight_layout()

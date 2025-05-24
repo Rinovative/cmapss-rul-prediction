@@ -4,6 +4,7 @@ from .eda_clustering import (
     plot_cluster_transitions_sankey,
     plot_lifetime_boxplot_by_cluster,
     plot_mean_normalized_sensors_by_cluster,
+    plot_op_settings_vs_cluster,
     plot_tsne_dbscan_clusters,
 )
 from .eda_life import compute_life_stats, describe_life_stats, plot_life_distribution
@@ -43,6 +44,7 @@ all = [
     "plot_sensor_rul_correlation",
     "plot_average_sensor_trend_normalized_time",
     "plot_tsne_dbscan_clusters",
+    "plot_op_settings_vs_cluster",
     "plot_lifetime_boxplot_by_cluster",
     "plot_cluster_distribution_last_cycle",
     "plot_mean_normalized_sensors_by_cluster",

@@ -1,6 +1,9 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Rinovative/cmapss-rul-prediction/HEAD)  
 _Interaktives Jupyter Notebook direkt im Browser öffnen (via Binder)_
 
+> **Hinweis:**  
+> Für bessere Performance in Binder immer nur ein Widget gleichzeitig offen halten.
+
 # Predictive Maintenance – RUL-Vorhersage mit C-MAPSS (Semesterprojekt)
 
 **Semesterprojekt** im Rahmen des Studiengangs  

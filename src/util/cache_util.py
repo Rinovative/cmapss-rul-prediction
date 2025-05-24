@@ -114,3 +114,11 @@ def cache_all_plots(plot_lists, dataset_name, force_recompute=False):
                     plt.close(result)
                 plt.close("all")
                 plt.ion()
+
+
+def delete_if_exists(path: str):
+    """
+    Löscht die Datei am gegebenen Pfad, falls sie existiert.
+    """
+    if os.path.exists(path):
+        os.remove(path)

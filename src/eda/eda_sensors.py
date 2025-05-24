@@ -14,10 +14,11 @@ def plot_single_sensor_curves(
     dataset_name: str = "",
     sensor_cols=None,
     normalize: bool = False,
+    rolling_window: int | None = None,
 ):
     """
-    Plottet die Sensorverläufe mehrerer Units gemeinsam (ein Subplot pro Sensor).
-    Funktioniert auch bei kombinierten Datensätzen mit 'dataset'-Spalte.
+    Plottet die Sensorverläufe mehrerer Units gemeinsam (ein Subplot pro Sensor),
+    optional geglättet über Rolling Mean.
 
     Args:
         df (pd.DataFrame): Trainingsdatensatz.
@@ -25,6 +26,7 @@ def plot_single_sensor_curves(
         dataset_name (str): Optionaler Titelzusatz.
         sensor_cols (list): Liste der Sensoren. Default: sensor_1 bis sensor_21.
         normalize (bool): Ob Sensorwerte pro Unit mit MinMax skaliert werden sollen.
+        rolling_window (int | None): Fenstergrösse für Rolling Mean. None = keine Glättung.
     """
     if sensor_cols is None:
         sensor_cols = [f"sensor_{i}" for i in range(1, 22)]
@@ -56,6 +58,9 @@ def plot_single_sensor_curves(
             scaler = MinMaxScaler()
             unit_df[sensor_cols] = scaler.fit_transform(unit_df[sensor_cols])
 
+        if rolling_window is not None:
+            unit_df[sensor_cols] = unit_df[sensor_cols].rolling(window=rolling_window, min_periods=1).mean()
+
         for i, col in enumerate(sensor_cols):
             axs[i].plot(unit_df["time"], unit_df[col], label=label, alpha=0.8)
 
@@ -69,8 +74,9 @@ def plot_single_sensor_curves(
         fig.delaxes(axs[j])
 
     norm_text = " (normalisiert)" if normalize else ""
+    smooth_text = f" – Rolling Mean (w={rolling_window})" if rolling_window else ""
     plt.suptitle(
-        f"Sensorverläufe {f'({dataset_name})' if dataset_name else ''}{norm_text}",
+        f"Sensorverläufe {f'({dataset_name})' if dataset_name else ''}{norm_text}{smooth_text}",
         fontsize=16,
     )
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))

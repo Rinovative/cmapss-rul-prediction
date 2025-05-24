@@ -56,11 +56,7 @@ def _show_anything(result, fallback_path=None):
         display(result)
 
 
-def make_dropdown_section(plots, dataset_name, description="Plot:"):
-    """
-    Erstellt eine Section (VBox) mit Dropdown zur Auswahl eines Plots (Lazy Loading!).
-    plots: Liste von (Titel, plot_func, plot_name)
-    """
+def make_dropdown_section(plots, dataset_name, description="Plot:", use_cache=True):
     dropdown = widgets.Dropdown(
         options=[(title, i) for i, (title, _, _) in enumerate(plots)], description=description, style={"description_width": "initial"}
     )
@@ -74,10 +70,16 @@ def make_dropdown_section(plots, dataset_name, description="Plot:"):
         plot_func = plots[idx][1]
         plot_name = plots[idx][2]
         png_path = cache_util.get_cache_path(dataset_name, "figures", plot_name, "png")
+
+        if not use_cache:
+            cache_util.delete_if_exists(png_path)
+
         with output:
             output.clear_output(wait=True)
-            plt.close("all")  # Speicher freigeben
-            if not os.path.exists(png_path):
+            plt.close("all")
+            if use_cache and os.path.exists(png_path):
+                display(Image(filename=png_path))
+            else:
                 result = plot_func()
                 if isinstance(result, tuple):
                     result = result[0]
@@ -87,12 +89,9 @@ def make_dropdown_section(plots, dataset_name, description="Plot:"):
                     display(Image(filename=png_path))
                 else:
                     _show_anything(result)
-            else:
-                display(Image(filename=png_path))
         last_idx["idx"] = idx
 
     dropdown.observe(on_plot_change, names="value")
-    # Direkt den ersten Plot anzeigen
     on_plot_change({"type": "change", "name": "value", "new": 0})
 
     return widgets.VBox([dropdown, output])
@@ -159,3 +158,70 @@ def make_lazy_panel_with_tabs(sections, tab_titles=None, open_btn_text="Bereich 
     close_btn.on_click(show_open)
     show_open()
     return main_out
+
+
+def make_cluster_navigation_panel(df, cluster_col, cluster_plot_func, sensor_cols, dataset_name="FDXXX", force_recompute=False):
+    """
+    Erstellt ein Panel mit Vor-/Zurück-Pfeilen zur Anzeige von Cluster-Plots.
+
+    Plots werden einmalig erstellt und danach als PNG aus dem Cache geladen.
+    Wenn force_recompute=True ist, werden gecachte PNGs gelöscht und neu erstellt.
+
+    Args:
+        df (pd.DataFrame): Daten mit Clusterlabels.
+        cluster_col (str): Name der Spalte mit Cluster-IDs.
+        cluster_plot_func (callable): Funktion mit df, sensor_cols, dataset_name → fig.
+        sensor_cols (list): Liste von Sensor-Spalten.
+        dataset_name (str): Für Cache-Verzeichnis.
+        force_recompute (bool): Wenn True, wird der Plot unabhängig vom Cache neu erstellt.
+
+    Returns:
+        ipywidgets.VBox: Interaktives Panel.
+    """
+    cluster_ids = sorted(df[cluster_col].unique())
+    idx = {"current": 0}
+    output = widgets.Output()
+
+    btn_prev = widgets.Button(description="←", layout=widgets.Layout(width="40px"))
+    btn_next = widgets.Button(description="→", layout=widgets.Layout(width="40px"))
+    cluster_label = widgets.Label()
+
+    def update_plot():
+        cid = cluster_ids[idx["current"]]
+        cluster_label.value = f"Cluster: {cid}"
+        cluster_df = df[df[cluster_col] == cid]
+
+        plot_name = f"{dataset_name.lower()}_-_cluster_{cid}_plot_{idx['current']:03d}"
+        png_path = cache_util.get_cache_path(dataset_name, "figures", plot_name, "png")
+
+        with output:
+            clear_output(wait=True)
+
+            if force_recompute and os.path.exists(png_path):
+                os.remove(png_path)
+
+            if os.path.exists(png_path):
+                display(Image(filename=png_path))
+                return
+
+            fig = cluster_plot_func(cluster_df, sensor_cols=sensor_cols, dataset_name=f"{dataset_name} – Cluster {cid}")
+            if isinstance(fig, plt.Figure):
+                cache_util.save_object(fig, png_path)
+                plt.close(fig)
+                display(Image(filename=png_path))
+            else:
+                _show_anything(fig)
+
+    def on_prev_clicked(_):
+        idx["current"] = (idx["current"] - 1) % len(cluster_ids)
+        update_plot()
+
+    def on_next_clicked(_):
+        idx["current"] = (idx["current"] + 1) % len(cluster_ids)
+        update_plot()
+
+    btn_prev.on_click(on_prev_clicked)
+    btn_next.on_click(on_next_clicked)
+
+    update_plot()
+    return widgets.VBox([widgets.HBox([btn_prev, btn_next, cluster_label]), output])

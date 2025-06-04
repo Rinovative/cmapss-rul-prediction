@@ -119,96 +119,6 @@ def plot_op_settings_vs_cluster(
     return fig
 
 
-def plot_lifetime_boxplot_by_cluster(df: pd.DataFrame, cluster_col: str = "cluster_tsne") -> plt.Figure:
-    """
-    Erstellt ein Boxplot der Lebensdauer (time) pro Cluster.
-
-    Args:
-        df (pd.DataFrame): Datensatz mit den Spalten 'unit', 'time' und Cluster-Spalte.
-        cluster_col (str): Spaltenname der Cluster-Zugehörigkeit.
-
-    Returns:
-        matplotlib.figure.Figure: Die erzeugte Figure.
-    """
-    df_last = df.sort_values("time").groupby("unit").tail(1)
-    df = df.merge(df_last[["unit", cluster_col]], on="unit", how="left", suffixes=("", "_last"))
-
-    fig, ax = plt.subplots(figsize=(8, 6))
-    sns.boxplot(data=df, x=cluster_col, y="time", ax=ax)
-    ax.set_title("Lebensdauer pro Cluster")
-    ax.set_xlabel("Cluster")
-    ax.set_ylabel("Zyklen")
-    ax.grid(True)
-    plt.tight_layout()
-
-    return fig
-
-
-def plot_cluster_distribution_last_cycle(df: pd.DataFrame, cluster_col: str = "cluster_tsne") -> plt.Figure:
-    """
-    Plottet die Verteilung der Clusterzugehörigkeiten basierend auf dem letzten Zyklus jeder Unit.
-
-    Args:
-        df (pd.DataFrame): Datensatz mit den Spalten 'unit', 'time' und der Cluster-Spalte.
-        cluster_col (str): Spaltenname der Cluster-Zugehörigkeit.
-
-    Returns:
-        matplotlib.figure.Figure: Die erzeugte Figure.
-    """
-    df_last = df.sort_values("time").groupby("unit").tail(1)
-
-    fig, ax = plt.subplots(figsize=(8, 6))
-    df_last[cluster_col].value_counts().sort_index().plot(kind="bar", ax=ax)
-    ax.set_title("Cluster-Verteilung (nur eindeutige Units)")
-    ax.set_xlabel("Cluster")
-    ax.set_ylabel("Anzahl Units")
-    ax.grid(True)
-    plt.tight_layout()
-
-    return fig
-
-
-def plot_mean_normalized_sensors_by_cluster(
-    df: pd.DataFrame,
-    sensor_cols: list[str] = None,
-    cluster_col: str = "cluster_tsne",
-    dataset_name: str = "",
-) -> plt.Figure:
-    """
-    Plottet den Mittelwert der normalisierten Sensorwerte je Cluster.
-
-    Args:
-        df (pd.DataFrame): Datensatz mit Sensorwerten und Clusterzugehörigkeit.
-        sensor_cols (list): Liste der zu analysierenden Sensoren.
-        cluster_col (str): Spalte mit Clusterlabels.
-        dataset_name (str): Optionaler Titelzusatz.
-
-    Returns:
-        matplotlib.figure.Figure: Die erzeugte Figure.
-    """
-    if sensor_cols is None:
-        sensor_cols = [f"sensor_{i}" for i in range(1, 22)]
-    elif all(isinstance(i, int) for i in sensor_cols):
-        sensor_cols = [f"sensor_{i}" for i in sensor_cols]
-
-    scaler = StandardScaler()
-    df_scaled = df.copy()
-    df_scaled[sensor_cols] = scaler.fit_transform(df_scaled[sensor_cols])
-
-    df_grouped = df_scaled.groupby(cluster_col)[sensor_cols].mean()
-
-    fig, ax = plt.subplots(figsize=(18, 8))
-    df_grouped.plot(kind="bar", ax=ax)
-    ax.set_title(f"Mittlere normalisierte Sensorwerte nach Cluster {f'({dataset_name})' if dataset_name else ''}")
-    ax.set_xlabel("Cluster")
-    ax.set_ylabel("Mittlerer normalisierter Sensorwert")
-    ax.legend(title="Sensors", bbox_to_anchor=(1.05, 1), loc="upper left")
-    ax.grid(True)
-    plt.tight_layout()
-
-    return fig
-
-
 def plot_cluster_transitions_sankey(
     df: pd.DataFrame,
     cluster_col: str = "cluster_tsne",
@@ -280,3 +190,184 @@ def plot_cluster_transitions_sankey(
         title += f" ({dataset_name})"
     fig.update_layout(title_text=title, font_size=12)
     return fig
+
+
+def plot_cluster_average_time(df: pd.DataFrame, cluster_col: str = "cluster_tsne", normalize_time: bool = True, dataset_name: str = "") -> plt.Figure:
+    """
+    Plottet den durchschnittlichen (ggf. normierten) Zykluswert, in dem jeder Cluster typischerweise auftritt.
+
+    Args:
+        df (pd.DataFrame): Datensatz mit Spalten 'unit', 'time' und Cluster-Spalte.
+        cluster_col (str): Spalte mit Clusterlabels.
+        normalize_time (bool): Falls True, wird Zyklus pro Unit durch max-Zyklus normiert (0–1).
+        dataset_name (str): Optionaler Titelzusatz.
+
+    Returns:
+        matplotlib.figure.Figure: Die erzeugte Figure.
+    """
+    df = df.copy()
+
+    if normalize_time:
+        # Normiere Zeit auf [0–1] je Unit
+        df["norm_time"] = df["time"] / df.groupby("unit")["time"].transform("max")
+        time_col = "norm_time"
+    else:
+        time_col = "time"
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.boxplot(data=df, x=cluster_col, y=time_col, ax=ax)
+    ax.set_title("Verteilung des Eintrittszeitpunkts je Cluster")
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Eintrittszeitpunkt (normiert)" if normalize_time else "Eintrittszeitpunkt (Zyklen)")
+    ax.grid(True)
+    plt.tight_layout()
+
+    return fig
+
+
+def plot_cluster_distribution_last_cycle(df: pd.DataFrame, cluster_col: str = "cluster_tsne") -> plt.Figure:
+    """
+    Plottet die Verteilung der Clusterzugehörigkeiten basierend auf dem letzten Zyklus jeder Unit.
+
+    Args:
+        df (pd.DataFrame): Datensatz mit den Spalten 'unit', 'time' und der Cluster-Spalte.
+        cluster_col (str): Spaltenname der Cluster-Zugehörigkeit.
+
+    Returns:
+        matplotlib.figure.Figure: Die erzeugte Figure.
+    """
+    df_last = df.sort_values("time").groupby("unit").tail(1)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    df_last[cluster_col].value_counts().sort_index().plot(kind="bar", ax=ax)
+    ax.set_title("Cluster-Verteilung (nur eindeutige Units)")
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Anzahl Units")
+    ax.grid(True)
+    plt.tight_layout()
+
+    return fig
+
+
+def plot_lifetime_boxplot_by_cluster(df: pd.DataFrame, cluster_col: str = "cluster_tsne") -> plt.Figure:
+    """
+    Erstellt ein Boxplot der Lebensdauer (maximale Zyklusanzahl) pro finalem Cluster.
+    Für jede Unit wird der letzte bekannte Cluster betrachtet.
+
+    Args:
+        df (pd.DataFrame): Datensatz mit 'unit', 'time' und Cluster-Spalte.
+        cluster_col (str): Spaltenname der Cluster-Zugehörigkeit.
+
+    Returns:
+        matplotlib.figure.Figure: Die erzeugte Figure.
+    """
+    # Lebensdauer pro Unit
+    life_df = df.groupby("unit")["time"].max().reset_index()
+
+    # Finaler Cluster pro Unit
+    final_cluster = df.sort_values("time").groupby("unit").tail(1)[["unit", cluster_col]]
+
+    # Mergen
+    merged = life_df.merge(final_cluster, on="unit", how="left")
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.boxplot(data=merged, x=cluster_col, y="time", ax=ax)
+
+    ax.set_title("Lebensdauer pro finalem Cluster")
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Lebensdauer (Zyklen)")
+    ax.grid(True)
+    plt.tight_layout()
+
+    return fig
+
+
+def plot_mean_normalized_sensors_by_cluster(
+    df: pd.DataFrame,
+    sensor_cols: list[str] = None,
+    cluster_col: str = "cluster_tsne",
+    dataset_name: str = "",
+) -> plt.Figure:
+    """
+    Plottet den Mittelwert der normalisierten Sensorwerte je Cluster.
+
+    Args:
+        df (pd.DataFrame): Datensatz mit Sensorwerten und Clusterzugehörigkeit.
+        sensor_cols (list): Liste der zu analysierenden Sensoren.
+        cluster_col (str): Spalte mit Clusterlabels.
+        dataset_name (str): Optionaler Titelzusatz.
+
+    Returns:
+        matplotlib.figure.Figure: Die erzeugte Figure.
+    """
+    if sensor_cols is None:
+        sensor_cols = [f"sensor_{i}" for i in range(1, 22)]
+    elif all(isinstance(i, int) for i in sensor_cols):
+        sensor_cols = [f"sensor_{i}" for i in sensor_cols]
+
+    scaler = StandardScaler()
+    df_scaled = df.copy()
+    df_scaled[sensor_cols] = scaler.fit_transform(df_scaled[sensor_cols])
+
+    df_grouped = df_scaled.groupby(cluster_col)[sensor_cols].mean()
+
+    fig, ax = plt.subplots(figsize=(18, 8))
+    df_grouped.plot(kind="bar", ax=ax)
+    ax.set_title(f"Mittlere normalisierte Sensorwerte nach Cluster {f'({dataset_name})' if dataset_name else ''}")
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Mittlerer normalisierter Sensorwert")
+    ax.legend(title="Sensors", bbox_to_anchor=(1.05, 1), loc="upper left")
+    ax.grid(True)
+    plt.tight_layout()
+
+    return fig
+
+
+def summarize_cluster_characteristics(
+    df: pd.DataFrame,
+    cluster_col: str = "cluster_tsne",
+) -> pd.DataFrame:
+    """
+    Erstellt eine aussagekräftige Zusammenfassung pro Cluster:
+    - Anzahl Datenpunkte
+    - Anzahl eindeutiger Units
+    - Anteil Units mit finalem Cluster = X
+    - Ø Eintrittszeitpunkt (normiert)
+    - Varianz Eintrittszeitpunkt (normiert)
+    - Ø Lebensdauer der Units, die in diesem Cluster enden
+
+    Args:
+        df (pd.DataFrame): Datensatz mit Spalten 'unit', 'time', Clusterlabels.
+        cluster_col (str): Spalte mit Clusterlabels.
+
+    Returns:
+        pd.DataFrame: Zusammenfassung pro Cluster.
+    """
+    df = df.copy()
+    df["norm_time"] = df["time"] / df.groupby("unit")["time"].transform("max")
+
+    group = df.groupby(cluster_col)
+    summary = pd.DataFrame(index=group.size().index)
+
+    summary["Anzahl Punkte"] = group.size()
+    summary["Anzahl Units"] = group["unit"].nunique()
+    summary["Ø Eintritt (normiert)"] = group["norm_time"].mean()
+    summary["Varianz Eintritt"] = group["norm_time"].var()
+
+    # Finaler Cluster je Unit
+    df_last = df.sort_values("time").groupby("unit").tail(1)
+
+    # Anteil Units mit finalem Cluster = X
+    final_cluster_counts = df_last[cluster_col].value_counts(normalize=True)
+    summary["Anteil finaler Units"] = summary.index.map(final_cluster_counts).fillna(0)
+
+    # Lebensdauer pro Unit
+    life_df = df.groupby("unit")["time"].max()
+    df_last["life"] = df_last["unit"].map(life_df)
+
+    # Ø Lebensdauer der Units, die in diesem Cluster enden
+    avg_life_by_final_cluster = df_last.groupby(cluster_col)["life"].mean()
+    summary["Ø Lebensdauer (finale Units)"] = summary.index.map(avg_life_by_final_cluster).fillna(0)
+
+    return summary.sort_index()

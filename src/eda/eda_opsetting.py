@@ -9,10 +9,6 @@ from .eda_sensors import (
     plot_single_sensor_curves,
 )
 
-# ============================================================
-#             ANALYSE DER OPERATION SETTINGS
-# ============================================================
-
 
 def plot_opsetting_curves(df: pd.DataFrame, unit_ids, dataset_name: str = ""):
     """

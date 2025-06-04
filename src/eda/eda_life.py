@@ -3,9 +3,6 @@ import pandas as pd
 import seaborn as sns
 
 
-# ============================================================
-#             Lebensdauer-Analyse-Funktionen
-# ============================================================
 def compute_life_stats(df: pd.DataFrame, print_extremes: bool = True) -> pd.Series:
     """
     Berechnet die Lebensdauer (Zyklen bis zum Ausfall) pro Unit.

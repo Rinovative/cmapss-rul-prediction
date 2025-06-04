@@ -5,9 +5,6 @@ import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 
 
-# ============================================================
-#             Sensorverläufe-Funktionen
-# ============================================================
 def plot_single_sensor_curves(
     df: pd.DataFrame,
     unit_ids,
@@ -156,7 +153,7 @@ def plot_sensor_correlation_matrix(df: pd.DataFrame, sensor_cols=None, annot=Fal
         title += f" ({dataset_name})"
 
     if ax is None:
-        fig, ax = plt.subplots(figsize=(14, 12))
+        fig, ax = plt.subplots(figsize=(10, 8))
         sns.heatmap(corr, cmap="coolwarm", vmin=-1, vmax=1, annot=annot, fmt=".2f", ax=ax)
         ax.set_title(title)
         return fig
@@ -285,6 +282,7 @@ def plot_sensor_distributions_by_cycle_range(
             stat="density",
             common_norm=False,
             element="step",
+            bins=50,
         )
 
         if ax.get_legend():
@@ -314,35 +312,34 @@ def plot_sensor_distributions_by_cycle_range(
 
 def plot_sensor_rul_correlation(df: pd.DataFrame, sensor_cols=None, dataset_name: str = ""):
     """
-    Plottet die Korrelation zwischen den Sensoren und der Lebensdauer der Triebwerke.
+    Plottet die Korrelation zwischen den Sensoren und der Remaining Useful Life (RUL).
 
     Args:
-        df (pd.DataFrame): Der Datensatz mit den Sensorwerten.
-        sensor_cols (list): Liste der Sensoren, die analysiert werden sollen.
+        df (pd.DataFrame): Der Datensatz mit Sensorwerten und RUL-Spalte.
+        sensor_cols (list): Liste der Sensor-Spaltennamen oder Sensor-IDs.
         dataset_name (str): Optionaler Titelzusatz.
 
     Returns:
         matplotlib.figure.Figure: Die erzeugte Figure.
     """
+
     if sensor_cols is None:
         sensor_cols = [f"sensor_{i}" for i in range(1, 22)]
     elif all(isinstance(i, int) for i in sensor_cols):
         sensor_cols = [f"sensor_{i}" for i in sensor_cols]
 
-    life_stats = df.groupby("unit")["time"].max()
-    life_stats = life_stats.reindex(df["unit"].unique(), fill_value=0)
-
     with np.errstate(divide="ignore", invalid="ignore"):
-        corr = df[sensor_cols].corrwith(life_stats)
+        corr = df[sensor_cols].corrwith(df["RUL"])
 
     fig, ax = plt.subplots(figsize=(10, 6))
     corr.plot(kind="bar", color="skyblue", ax=ax)
     ax.axhline(0, color="black", linewidth=0.8)
     ax.set_title(
-        f"Korrelation zwischen {'Sensoren' if 'sensor' in sensor_cols[0] else 'Operation Settings'} und Lebensdauer (RUL) {f'({dataset_name})' if dataset_name else ''}"  # noqa: 401
+        f"Korrelation zwischen {'Sensoren' if 'sensor' in sensor_cols[0] 
+                                else 'Operation Settings'} und RUL {f'({dataset_name})' if dataset_name else ''}"
     )
     ax.set_xlabel("Variablen")
-    ax.set_ylabel("Korrelation")
+    ax.set_ylabel("Korrelationskoeffizient")
     plt.tight_layout()
 
     return fig

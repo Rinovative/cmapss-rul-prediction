@@ -2,32 +2,40 @@
 
 from .hyperparameter_tuning import (
     expand_best_params,
-    nasa_score,
     nasa_scorer,
     run_grid_search,
     run_random_search,
     select_best_per_model,
 )
+from .interpretation import (
+    plot_feature_importance,
+    plot_pdp,
+    plot_shap_beeswarm,
+    plot_shap_waterfalls,
+)
 from .models import (
     evaluate_model,
-    evaluate_model_weighted,
-    get_model_list,
+    nasa_score,
 )
-from .models import nasa_score as nasa_score_model
 from .plotting import (
     plot_model_scores,
     plot_prediction_and_residuals,
 )
 
 __all__ = [
-    "get_model_list",
+    # Bewertung & Metriken
     "evaluate_model",
-    "evaluate_model_weighted",
     "nasa_score",
-    "nasa_score_model",
     "nasa_scorer",
+    # Modellvergleich & Visualisierung
     "plot_prediction_and_residuals",
     "plot_model_scores",
+    # Modellinterpretation (XAI)
+    "plot_feature_importance",
+    "plot_pdp",
+    "plot_shap_beeswarm",
+    "plot_shap_waterfalls",
+    # HPT
     "run_grid_search",
     "run_random_search",
     "select_best_per_model",

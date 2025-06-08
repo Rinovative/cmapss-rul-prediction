@@ -7,12 +7,13 @@ import numpy as np
 CACHE_DIR = "cache"
 
 
-def get_cache_path(dataset_name: str, kind: str, name: str, ext: str):
+def get_cache_path(dataset_name: str, kind: str, name: str, ext: str, create_dirs: bool = True) -> str:
     """
     Gibt den vollständigen Cache-Pfad für ein bestimmtes Dataset und einen bestimmten Dateityp zurück.
     """
     path = os.path.join(CACHE_DIR, dataset_name.lower(), kind)
-    os.makedirs(path, exist_ok=True)
+    if create_dirs:
+        os.makedirs(path, exist_ok=True)
     return os.path.join(path, f"{name}.{ext}")
 
 

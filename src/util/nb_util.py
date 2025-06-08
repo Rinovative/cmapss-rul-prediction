@@ -67,16 +67,21 @@ def make_dropdown_section(plots, dataset_name, description="Plot:", use_cache=Tr
         idx = change["new"]
         if last_idx["idx"] == idx:
             return
+
         plot_func = plots[idx][1]
         plot_name = plots[idx][2]
-        png_path = cache_util.get_cache_path(dataset_name, "figures", plot_name, "png")
+        png_path = None
 
-        if not use_cache:
+        if use_cache:
+            png_path = cache_util.get_cache_path(dataset_name, "figures", plot_name, "png")
+        else:
+            png_path = cache_util.get_cache_path(dataset_name, "figures", plot_name, "png", create_dirs=False)
             cache_util.delete_if_exists(png_path)
 
         with output:
             output.clear_output(wait=True)
             plt.close("all")
+
             if use_cache and os.path.exists(png_path):
                 display(Image(filename=png_path))
             else:
@@ -84,11 +89,15 @@ def make_dropdown_section(plots, dataset_name, description="Plot:", use_cache=Tr
                 if isinstance(result, tuple):
                     result = result[0]
                 if isinstance(result, plt.Figure):
-                    cache_util.save_object(result, png_path)
-                    plt.close(result)
-                    display(Image(filename=png_path))
+                    if use_cache:
+                        cache_util.save_object(result, png_path)
+                        plt.close(result)
+                        display(Image(filename=png_path))
+                    else:
+                        display(result)
                 else:
                     _show_anything(result)
+
         last_idx["idx"] = idx
 
     dropdown.observe(on_plot_change, names="value")

@@ -77,6 +77,7 @@ def plot_single_sensor_curves(
         fontsize=16,
     )
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
+    plt.close(fig)
     return fig
 
 
@@ -123,6 +124,7 @@ def plot_sensor_overlay(df: pd.DataFrame, unit_id, dataset_name: str = "", senso
 
     if created_fig:
         plt.tight_layout()
+        plt.close(fig)
         return fig
     return ax
 
@@ -140,7 +142,7 @@ def plot_sensor_correlation_matrix(df: pd.DataFrame, sensor_cols=None, annot=Fal
         ax (matplotlib.axes.Axes, optional): Optional vorhandene Achse.
 
     Returns:
-        matplotlib.figure.Figure | matplotlib.axes.Axes: Figure wenn ax=None, sonst ax
+        matplotlib.figure.Figure | matplotlib.axes.Axes: Figure wenn ax=None, sonst ax.figure
     """
     if sensor_cols is None:
         sensor_cols = [f"sensor_{i}" for i in range(1, 22)]
@@ -156,6 +158,7 @@ def plot_sensor_correlation_matrix(df: pd.DataFrame, sensor_cols=None, annot=Fal
         fig, ax = plt.subplots(figsize=(10, 8))
         sns.heatmap(corr, cmap="coolwarm", vmin=-1, vmax=1, annot=annot, fmt=".2f", ax=ax)
         ax.set_title(title)
+        plt.close(fig)
         return fig
     else:
         sns.heatmap(corr, cmap="coolwarm", vmin=-1, vmax=1, annot=annot, fmt=".2f", ax=ax)
@@ -212,7 +215,7 @@ def plot_sensor_box_violin_last_cycle(df, sensor_cols=None, dataset_name: str = 
         fontsize=16,
     )
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
-
+    plt.close(fig)
     return fig
 
 
@@ -250,9 +253,13 @@ def plot_sensor_distributions_by_cycle_range(
     # Nur relevante Einträge behalten
     df = df[df["unit"].isin(selected_units)].copy()
 
-    # Lifetime-Klassifizierung, falls kein hue
-    if not hue_col:
-        df["lifetime_class"] = np.where(df["unit"].isin(long_units), "Viele Zyklen", "Wenige Zyklen")
+    # Lifetime-Klassifizierung, falls kein hue angegeben ist
+    if hue_col is None:
+        if long_units.empty or short_units.empty:
+            hue_col = None  # keine Gruppierung anzeigen
+        else:
+            df["lifetime_class"] = np.where(df["unit"].isin(long_units), "Viele Zyklen", "Wenige Zyklen")
+            hue_col = "lifetime_class"
 
     # Sensorliste generieren
     if sensor_cols is None:
@@ -273,21 +280,26 @@ def plot_sensor_distributions_by_cycle_range(
         sensor_var = df[sensor].var()
         use_kde = sensor_var > 1e-4
 
-        sns.histplot(
-            data=df,
-            x=sensor,
-            hue=hue_col if hue_col else "lifetime_class",
-            kde=use_kde,
-            ax=ax,
-            stat="density",
-            common_norm=False,
-            element="step",
-            bins=50,
-        )
+        # hue nur verwenden, wenn Spalte vorhanden ist
+        plot_kwargs = {
+            "data": df,
+            "x": sensor,
+            "kde": use_kde,
+            "ax": ax,
+            "stat": "density",
+            "common_norm": False,
+            "element": "step",
+            "bins": 50,
+        }
+
+        if hue_col and hue_col in df.columns:
+            plot_kwargs["hue"] = hue_col
+
+        sns.histplot(**plot_kwargs)
 
         if ax.get_legend():
-            if len(ax.get_legend().texts) <= 5:
-                ax.legend_.set_title(hue_col if hue_col else "lifetime_class")
+            if hue_col and len(ax.get_legend().texts) <= 5:
+                ax.legend_.set_title(hue_col)
             else:
                 ax.legend_.remove()
 
@@ -307,6 +319,7 @@ def plot_sensor_distributions_by_cycle_range(
         fontsize=16,
     )
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
+    plt.close(fig)
     return fig
 
 
@@ -335,13 +348,13 @@ def plot_sensor_rul_correlation(df: pd.DataFrame, sensor_cols=None, dataset_name
     corr.plot(kind="bar", color="skyblue", ax=ax)
     ax.axhline(0, color="black", linewidth=0.8)
     ax.set_title(
-        f"Korrelation zwischen {'Sensoren' if 'sensor' in sensor_cols[0] 
+        f"Korrelation zwischen {'Sensoren' if 'sensor' in sensor_cols[0]
                                 else 'Operation Settings'} und RUL {f'({dataset_name})' if dataset_name else ''}"
     )
     ax.set_xlabel("Variablen")
     ax.set_ylabel("Korrelationskoeffizient")
     plt.tight_layout()
-
+    plt.close(fig)
     return fig
 
 
@@ -402,5 +415,5 @@ def plot_average_sensor_trend_normalized_time(df: pd.DataFrame, sensor_cols=None
         fontsize=16,
     )
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
-
+    plt.close(fig)
     return fig

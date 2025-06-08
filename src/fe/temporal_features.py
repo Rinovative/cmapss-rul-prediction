@@ -166,7 +166,7 @@ def extract_temporal_features(
 
                 n = len(segment)
                 early = segment.iloc[: int(0.3 * n)]
-                late = segment.iloc[-int(0.3 * n) :]  # noqa: E203
+                late = segment.iloc[-int(0.3 * n) :]
                 row[f"{col}_mean_diff"] = late.mean() - early.mean()
 
             rows.append(row)

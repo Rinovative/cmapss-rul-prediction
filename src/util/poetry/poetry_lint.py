@@ -11,6 +11,7 @@ def main():
         [
             "flake8",
             "--select=E,F",
+            "--ignore=E203",
             "--exclude=.venv,__pycache__,.pytest_cache",
             "src",
             "--max-line-length=150",

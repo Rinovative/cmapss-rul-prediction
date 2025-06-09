@@ -37,63 +37,72 @@ def plot_prediction_and_residuals(y_true, y_pred, model_name="Modell") -> None:
     plt.show()
 
 
-def plot_model_scores(df_vor, df_nach=None, score_col="NASA-Score", title="Modellvergleich", clip_score=2000) -> None:
+def _strip_parentheses(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Zeichnet Balken für Modell-Scores. Entweder:
-      - Zwei DataFrames mit ["Model", score_col"] übergeben (df_vor und df_nach), oder
-      - Ein einzelnes DataFrame (df_vor) ohne "Variante"-Spalte: dann wird jeweils ein Balken zentriert gezeichnet.
+    Entfernt Klammeranhänge am Ende der Modellnamen.
 
-    Parameter
-    ----------
-    df_vor : pd.DataFrame
-        Entweder "Vorher"-Ergebnisse mit ["Model", score_col"], oder das einzige DataFrame,
-        wenn df_nach=None.
-    df_nach : pd.DataFrame oder None
-        "Nachher"-Ergebnisse mit ["Model", score_col"], oder None, wenn df_vor alle Daten enthält.
-    score_col : str
-        Spaltenname des Scores (default "NASA-Score").
-    title : str
-        Titel des Plots.
-    clip_score : float
-        Maximalwert für Y-Achse (Scores > clip_score werden beschnitten).
+    Args:
+        df (pd.DataFrame): DataFrame mit einer 'Model'-Spalte.
+
+    Returns:
+        pd.DataFrame: Kopiertes DataFrame mit bereinigten Modellnamen.
     """
+    df = df.copy()
+    df["Model"] = df["Model"].astype(str).str.replace(r"\s*\(.*\)$", "", regex=True)
+    return df
 
-    # Hilfsfunktion: Klammer-Anhänge am Ende entfernen
-    def strip_parentheses(df):
-        df = df.copy()
-        df["Model"] = df["Model"].astype(str).str.replace(r"\s*\(.*\)$", "", regex=True)
-        return df
 
-    # 1. Vorbereitung je nachdem, ob df_nach übergeben wurde
+def _prepare_model_dataframe(df_vor: pd.DataFrame, df_nach: pd.DataFrame | None, score_col: str) -> pd.DataFrame:
+    """
+    Bereitet das DataFrame für den Plot vor. Kann Einzelvergleich oder Vorher-Nachher-Vergleich verarbeiten.
+
+    Args:
+        df_vor (pd.DataFrame): DataFrame mit Modellnamen und Scores (ggf. mit 'Variante').
+        df_nach (pd.DataFrame | None): Optional zweites DataFrame für Vergleich (gleiche Struktur wie df_vor).
+        score_col (str): Name der Score-Spalte (z.B. "NASA-Score").
+
+    Returns:
+        pd.DataFrame: Vereinheitlichtes DataFrame mit Spalten ['Model', score_col, 'Variante'].
+
+    Raises:
+        ValueError: Wenn Pflichtspalten fehlen.
+    """
+    df_vor = _strip_parentheses(df_vor)
     if df_nach is not None:
-        df1 = strip_parentheses(df_vor)
-        df2 = strip_parentheses(df_nach)
-        for df_, name in [(df1, "df_vor"), (df2, "df_nach")]:
+        df_nach = _strip_parentheses(df_nach)
+        for df_, name in [(df_vor, "df_vor"), (df_nach, "df_nach")]:
             if "Model" not in df_.columns or score_col not in df_.columns:
                 raise ValueError(f"{name} muss Spalten ['Model', '{score_col}'] enthalten.")
-        df1 = df1[["Model", score_col]].copy()
+        df1 = df_vor[["Model", score_col]].copy()
         df1["Variante"] = "vor"
-        df2 = df2[["Model", score_col]].copy()
+        df2 = df_nach[["Model", score_col]].copy()
         df2["Variante"] = "nach"
-        df = pd.concat([df1, df2], ignore_index=True)
-
+        return pd.concat([df1, df2], ignore_index=True)
     else:
         df = df_vor.copy()
-        df = strip_parentheses(df)
         if "Variante" in df.columns:
             if "Model" not in df.columns or score_col not in df.columns:
-                raise ValueError("Das kombinierte DataFrame muss Spalten ['Model', '{score_col}', 'Variante'] enthalten.")
-            df = df[["Model", score_col, "Variante"]].copy()
+                raise ValueError(f"Das kombinierte DataFrame muss Spalten ['Model', '{score_col}', 'Variante'] enthalten.")
+            return df[["Model", score_col, "Variante"]].copy()
         else:
             if "Model" not in df.columns or score_col not in df.columns:
-                raise ValueError("df_vor muss Spalten ['Model', '{score_col}'] enthalten.")
-            df = df[["Model", score_col]].copy()
+                raise ValueError(f"df_vor muss Spalten ['Model', '{score_col}'] enthalten.")
             df["Variante"] = "nach"
+            return df[["Model", score_col, "Variante"]]
 
-    # 2. Clipping der Scores
+
+def _plot_model_bars(df: pd.DataFrame, score_col: str, title: str, clip_score: float) -> None:
+    """
+    Erstellt den Balkenplot für Modell-Scores mit optionalem Vorher-Nachher-Vergleich.
+
+    Args:
+        df (pd.DataFrame): DataFrame mit Spalten ['Model', score_col, 'Variante'].
+        score_col (str): Name der Score-Spalte.
+        title (str): Plot-Titel.
+        clip_score (float): Obergrenze für die Y-Achse (grössere Scores werden beschnitten).
+    """
     df["Score Clipped"] = df[score_col].clip(upper=clip_score)
 
-    # 3. Sortieren: nach "nach"-Score, sonst alphabetisch
     if "nach" in df["Variante"].unique():
         sorted_models = df[df["Variante"] == "nach"].sort_values(score_col)["Model"].unique()
     else:
@@ -102,30 +111,20 @@ def plot_model_scores(df_vor, df_nach=None, score_col="NASA-Score", title="Model
     model_order = list(sorted_models)
     x = np.arange(len(model_order))
     width = 0.35
-
-    # 4. Farbpalette je Modell
     palette = plt.get_cmap("tab10")
     color_map = {name: palette(i % 10) for i, name in enumerate(model_order)}
 
-    # 5. Plot erstellen
     fig, ax = plt.subplots(figsize=(10, 6))
     for i, base in enumerate(model_order):
         base_df = df[df["Model"] == base]
         variants = base_df["Variante"].unique()
-
         for _, row in base_df.iterrows():
-            variant = row["Variante"]
-            color = color_map[base]
-            has_both = ("vor" in variants) and ("nach" in variants)
-
-            if has_both:
-                xpos = x[i] - width / 2 if variant == "vor" else x[i] + width / 2
-            else:
-                xpos = x[i]
-
-            alpha = 0.4 if variant == "vor" else 1.0
-            hatch = "//" if variant == "vor" else ""
-            ax.bar(xpos, row["Score Clipped"], width=width, color=color, alpha=alpha, hatch=hatch, edgecolor="black")
+            xpos = x[i]
+            if "vor" in variants and "nach" in variants:
+                xpos += -width / 2 if row["Variante"] == "vor" else width / 2
+            alpha = 0.4 if row["Variante"] == "vor" else 1.0
+            hatch = "//" if row["Variante"] == "vor" else ""
+            ax.bar(xpos, row["Score Clipped"], width=width, color=color_map[base], alpha=alpha, hatch=hatch, edgecolor="black")
 
     ax.set_xticks(x)
     ax.set_xticklabels(model_order, rotation=45, ha="right")
@@ -133,7 +132,6 @@ def plot_model_scores(df_vor, df_nach=None, score_col="NASA-Score", title="Model
     ax.set_title(title)
     ax.grid(True, axis="y")
 
-    # 6. Legende nur, wenn beide Varianten vorhanden sind
     if set(df["Variante"]) == {"vor", "nach"}:
         handles = [
             plt.Rectangle((0, 0), 1, 1, facecolor="gray", edgecolor="black", alpha=1.0, label="nach"),
@@ -143,3 +141,20 @@ def plot_model_scores(df_vor, df_nach=None, score_col="NASA-Score", title="Model
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_model_scores(
+    df_vor: pd.DataFrame, df_nach: pd.DataFrame | None = None, score_col: str = "NASA-Score", title: str = "Modellvergleich", clip_score: float = 2000
+) -> None:
+    """
+    Wrapper-Funktion für den Vergleich von Modell-Scores in einem Balkendiagramm.
+
+    Args:
+        df_vor (pd.DataFrame): DataFrame mit Scores (ggf. mit 'Variante'-Spalte).
+        df_nach (pd.DataFrame | None): Optionaler Vergleichs-DataFrame.
+        score_col (str): Spaltenname für den Score.
+        title (str): Titel des Plots.
+        clip_score (float): Y-Achsenbegrenzung (Clipping).
+    """
+    df = _prepare_model_dataframe(df_vor, df_nach, score_col)
+    _plot_model_bars(df, score_col, title, clip_score)

@@ -107,11 +107,10 @@ def plot_shap_waterfalls(model, X_train, X_test, y_test, y_pred):
     shap_values = explainer(X_test)
 
     expected_value = shap_values.base_values.mean()
-    tolerance_pred = 5
     tolerance_exact = 2.0
 
-    idx_below = np.where(y_pred < expected_value - tolerance_pred)[0][0]
-    idx_above = np.where(y_pred > expected_value + tolerance_pred)[0][0]
+    idx_below = np.where(y_pred < expected_value)[0][0]
+    idx_above = np.where(y_pred > expected_value)[0][0]
     idx_exact = np.argmin(np.abs(y_pred - y_test.values))
     assert abs(y_pred[idx_exact] - y_test.values[idx_exact]) < tolerance_exact
 

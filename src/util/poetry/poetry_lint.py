@@ -17,7 +17,7 @@ def main():
             "--max-line-length=150",
         ],
         # ["basedpyright", "--level", "error"],
-        ["complexipy", ".", "--max-complexity", "25"],
+        ["complexipy", ".", "--max-complexity", "25", "--details", "normal", "--sort", "asc"],
     ]
     for cmd in cmds:
         print(f"\n>>> {' '.join(cmd)}")

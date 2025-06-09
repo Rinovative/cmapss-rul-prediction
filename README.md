@@ -15,8 +15,8 @@ _Interaktives Jupyter Notebook direkt im Browser öffnen (via Binder)_
 
 ## 📌 Projektbeschreibung
 
-Dieses Projekt befasst sich mit der Vorhersage der verbleibenden Nutzungsdauer (Remaining Useful Life, RUL) von Flugtriebwerken anhand des NASA C-MAPSS-Datensatzes.  
-Ziel ist die Entwicklung eines robusten, generalisierbaren Machine-Learning-Modells zur frühzeitigen Identifikation von Wartungsbedarf.
+Ziel dieses Projekts ist die zuverlässige Vorhersage der verbleibenden Nutzungsdauer (Remaining Useful Life, RUL) von Flugtriebwerken anhand des NASA C-MAPSS-Datensatzes.  
+Dazu wird ein generalisierbares Machine-Learning-Modell entwickelt, das frühzeitig auf Wartungsbedarf hinweist.
 
 Das Projekt umfasst:
 
@@ -29,7 +29,8 @@ Eine interaktive Notebook-Dokumentation mit zahlreichen Visualisierungen erlaubt
 
 ---
 
-## ⚙️ Lokale Ausführung
+<details>
+<summary><strong>⚙️ Lokale Ausführung</strong></summary>
 
 1. Repository klonen:
    ```bash
@@ -49,10 +50,12 @@ Eine interaktive Notebook-Dokumentation mit zahlreichen Visualisierungen erlaubt
 
 4. Notebook öffnen:  
    `ML_End2End_Projekt_Rino_Albertin_Predictive_Maintenance.ipynb`
+</details>
 
 ---
 
-## 📂 Projektstruktur
+<details>
+<summary><strong>📂 Projektstruktur anzeigen</strong></summary>
 
 ```bash
 .
@@ -111,6 +114,7 @@ Eine interaktive Notebook-Dokumentation mit zahlreichen Visualisierungen erlaubt
 ├── requirements.txt                 # Alternativ zu Poetry – nötig für Binder
 └── runtime.txt                      # Binder-konforme Python-Version
 ```
+</details>
 
 ---
 
@@ -122,19 +126,35 @@ Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).
 
 ## 📚 Quellen
 
-- NASA C-MAPSS-Datensatz:  
-  [data.nasa.gov](https://data.nasa.gov/d/ff5v-kuh6)  
-  [Kaggle Mirror](https://www.kaggle.com/datasets/behrad3d/nasa-cmaps)
+- **C-MAPSS-Datensatz** – NASA Prognostics Center of Excellence (Datensatz Nr. 6 aus dem offiziellen NASA Prognostics Data Repository):  
+  A. Saxena and K. Goebel (2008). *Turbofan Engine Degradation Simulation Data Set*, NASA Prognostics Data Repository, NASA Ames Research Center, Moffett Field, CA.  
+  [Offizielle Beschreibung auf nasa.gov](https://www.nasa.gov/intelligent-systems-division/discovery-and-systems-health/pcoe/pcoe-data-set-repository/)  
+  [Direkter Download (ZIP)](https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip)
 
-- Lehrunterlagen „Machine Learning“ – OST – Ostschweizer Fachhochschule
+> Die C-MAPSS-Daten wurden aus dem Original-Download (NASA ZIP-Datei) extrahiert und liegen im Projekt als `.txt`-Dateien im Ordner `data/raw/` vor. Sie wurden **nicht verändert**, um Reproduzierbarkeit zu gewährleisten.
+
+- **Lehrunterlagen** „Machine Learning“ – OST – Ostschweizer Fachhochschule
 
 ### 📖 Literaturverzeichnis
 
-[1] Gupta, R. K.; Nakum, J.; Gupta, P.: *A Machine Learning Approach for Turbofan Jet Engine Predictive Maintenance*. Procedia Computer Science, 259, 2025, S. 161–171. https://doi.org/10.1016/j.procs.2025.03.317   
-[2] Wang, H.; Li, D.; Li, D.; Liu, C.; Yang, X.; Zhu, G.: *Remaining Useful Life Prediction of Aircraft Turbofan Engine Based on Random Forest Feature Selection and Multi-Layer Perceptron*. Applied Sciences, 13, 2023, Art. 7186. https://doi.org/10.3390/app13127186   
-[3] Asif, O.; Haider, S. A.; Naqvi, S. R.; Zaki, J. F. W.; Kwak, K.-S.; Islam, S. M. R.: *A Deep Learning Model for Remaining Useful Life Prediction of Aircraft Turbofan Engine on C-MAPSS Dataset*. IEEE Access, 10, 95425–95440, 2022. https://doi.org/10.1109/ACCESS.2022.3203406   
-[4] Peringal, A.; Mohiuddin, M. B.; Hassan, A.: *Remaining Useful Life Prediction for Aircraft Engines using LSTM.* Preprint auf arXiv, 2024. https://arxiv.org/abs/2401.07590
+1. [*A Machine Learning Approach for Turbofan Jet Engine Predictive Maintenance*](https://doi.org/10.1016/j.procs.2025.03.317)  
+   Gupta, R. K.; Nakum, J.; Gupta, P.  
+   _Procedia Computer Science_, **259**, 2025, S. 161–171.
+
+2. [*Remaining Useful Life Prediction of Aircraft Turbofan Engine Based on Random Forest Feature Selection and Multi-Layer Perceptron*](https://doi.org/10.3390/app13127186)  
+   Wang, H.; Li, D.; Li, D.; Liu, C.; Yang, X.; Zhu, G.  
+   _Applied Sciences_, **13**, 2023, Art. 7186.
+
+3. [*A Deep Learning Model for Remaining Useful Life Prediction of Aircraft Turbofan Engine on C-MAPSS Dataset*](https://doi.org/10.1109/ACCESS.2022.3203406)  
+   Asif, O.; Haider, S. A.; Naqvi, S. R.; Zaki, J. F. W.; Kwak, K.-S.; Islam, S. M. R.  
+   _IEEE Access_, **10**, 2022, S. 95425–95440.
+
+4. [*Remaining Useful Life Prediction for Aircraft Engines using LSTM*](https://arxiv.org/abs/2401.07590)  
+   Peringal, A.; Mohiuddin, M. B.; Hassan, A.  
+   _arXiv Preprint_, 2024.
+
 
 ---
 > **Hinweis:**  
-> *Für die sprachliche Überarbeitung und die Unterstützung bei Codefragmenten wurde das KI-Tool* **ChatGPT** *von OpenAI (GPT-4o, https://chatgpt.com) verwendet. Die fachliche und inhaltliche Verantwortung liegt vollständig beim Autor.*
+> *Für sprachliche Überarbeitung und Unterstützung bei Codefragmenten wurde das KI-Tool **ChatGPT (GPT-4o)** von OpenAI verwendet.*  
+> *Die fachliche und inhaltliche Verantwortung liegt vollständig beim Autor.*

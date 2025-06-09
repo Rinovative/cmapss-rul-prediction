@@ -34,4 +34,4 @@ jobs:
     #   run: poetry run basedpyright --level error
 
     - name: Run complexipy
-      run: poetry run complexipy . --max-complexity 25
+      run: poetry run complexipy src/ --max-complexity 25

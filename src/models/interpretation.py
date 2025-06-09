@@ -116,7 +116,7 @@ def plot_shap_waterfalls(model, X_train, X_test, y_test, y_pred):
     assert abs(y_pred[idx_exact] - y_test.values[idx_exact]) < tolerance_exact
 
     indices = [idx_below, idx_above, idx_exact]
-    titles = ["(A) Unter dem Durchschnitt", "(B) Über dem Durchschnitt", "(C) Genau Vorhersage"]
+    titles = ["(A) RUL unter dem Durchschnitt", "(B) RUL über dem Durchschnitt", "(C) Genau Vorhersage der RUL"]
 
     for idx, title in zip(indices, titles):
         true = y_test.iloc[idx]

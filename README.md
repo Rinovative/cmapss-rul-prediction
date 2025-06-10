@@ -18,14 +18,40 @@ _Interaktives Jupyter Notebook direkt im Browser öffnen (via Binder)_
 Ziel dieses Projekts ist die zuverlässige Vorhersage der verbleibenden Nutzungsdauer (Remaining Useful Life, RUL) von Flugtriebwerken anhand des NASA C-MAPSS-Datensatzes.  
 Dazu wird ein generalisierbares Machine-Learning-Modell entwickelt, das frühzeitig auf Wartungsbedarf hinweist.
 
-Das Projekt umfasst:
+<details>
+<summary>Übersicht der Projektinhalte anzeige</summary>
 
-- explorative Datenanalyse (EDA) für alle vier C-MAPSS-Datensätze (FD001–FD004),
-- Feature Engineering und Zustandserkennung per Clusteranalyse (t-SNE, DBSCAN),
-- hyperparametrisierte ML-Pipelines zur RUL-Prognose,
-- Entwicklung eines Generalmodells für alle Szenarien.
+- **EDA**  
+  - Mit **interaktiven Widgets** lassen sich für jeden Datensatz die vier Analyse-Sektionen (Übersicht, Settings, Sensoren, Cluster) ein- und ausklappen.  
+  - **op_settings** werden über Lebensdauerkennzahlen, Verteilungsplots und Heatmaps analysiert.  
+  - **Sensoren** werden mittels Zeitreihen-Overlays, Box-/Violin-Plots und trend-normalisierten Kurven untersucht.  
+  - **Cluster** werden über t-SNE/DBSCAN erkannt, Sankey-Übergänge visualisiert und Eintrittszeitpunkte ausgewertet.  
+
+- **Feature Engineering**  
+  - Durch **kombinierte Features** wie Druck-Temperatur-Verhältnisse und Drehzahl-Differenzen werden komplexe Zusammenhänge abgebildet.  
+  - **Teillauf-Simulation**: Bei 25 % der Einheiten wird zufällig 0 – 25 % der letzten Zyklen gekürzt, um reale unvollständige Laufzeiten zu simulieren.  
+  - Zur **Normierung & Skalierung** wird die Zykluszeit auf [0, 1] normiert und pro op_cond-Gruppe z-standardisiert.  
+  - Die **Zustandserkennung per Clusteranalyse** erfolgt über t-SNE/DBSCAN; anschließend wird ein Random-Forest-Klassifikator auf den Clusterlabels trainiert und diese Labels im Testset als Feature eingebunden.  
+  - In **temporalen Fenstern** (± 0.25 um 25 %, 50 % und 75 % der normierten Laufzeit) werden Slope, R², Range, Mean-Diff, etc. extrahiert.  
+  - Die **Feature Selection** wird mittels Random-Forest-Importance durchgeführt, um unwichtige Merkmale zu eliminieren.  
+
+- **Modellierung & Optimierung**  
+  - Verschiedene **Modelle** (Linear, Ridge, Lasso, Random Forest, Gradient Boosting, SVR, KNN, Decision Tree) werden verglichen.  
+  - Durch **gewichtete Samples** mit exponentiell abnehmenden Gewichten bei niedriger RUL wird die Sensitivität auf kritische Phasen erhöht.  
+  - Das **Hyperparameter-Tuning** erfolgt zweistufig auf Basis des NASA-Scores: zunächst Grobes GridSearchCV, anschliessend RandomizedSearchCV.  
+
+- **Evaluation & Interpretation**  
+  - Mit den **Metriken** RMSE, R² und asymmetrischem NASA-Score wird die Modellgüte bewertet.  
+  - **Residuen- und Vorhersageplots** werden zur Identifikation systematischer Abweichungen verwendet.  
+  - **XAI**-Methoden (SHAP Beeswarm/Waterfall, Partial Dependence Plots, Gini-Importance) werden eingesetzt, um globale und lokale Feature-Effekte zu erklären.  
+
+- **Generalmodell**  
+  - Durch die **Zusammenführung von FD001–FD004** wird ein umfassendes Trainingsset geschaffen.  
+  - Die **Pipeline-Anpassung** wird für heterogene op_cond-Gruppen optimiert.  
+  - Die **besten Modelle und Hyperparameter** aus den Einzelszenarien werden ins Generalmodell übernommen.  
 
 Eine interaktive Notebook-Dokumentation mit zahlreichen Visualisierungen erlaubt einen vollständigen Einblick in alle Schritte.
+</details>
 
 ---
 

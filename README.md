@@ -29,8 +29,9 @@ Eine interaktive Notebook-Dokumentation mit zahlreichen Visualisierungen erlaubt
 
 ---
 
+## ⚙️ Lokale Ausführung
 <details>
-<summary><strong>⚙️ Lokale Ausführung</strong></summary>
+<summary>Installationsanleitung anzeigen</summary>
 
 1. Repository klonen:
    ```bash
@@ -54,8 +55,9 @@ Eine interaktive Notebook-Dokumentation mit zahlreichen Visualisierungen erlaubt
 
 ---
 
+## 📂 Projektstruktur
 <details>
-<summary><strong>📂 Projektstruktur anzeigen</strong></summary>
+<summary><strong>Projektstruktur anzeigen</strong></summary>
 
 ```bash
 .

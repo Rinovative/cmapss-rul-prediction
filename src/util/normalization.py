@@ -137,7 +137,7 @@ def standardize_by_op_cond(df_train: pd.DataFrame, df_test: pd.DataFrame) -> tup
     df_test_scaled = df_test.copy()
 
     exclude = {"unit", "time", "RUL", "alt_cat", "mach_cat", "tra_cat", "op_cond"}
-    sensor_cols = [col for col in df_train.columns if col not in exclude and np.issubdtype(df_train[col].dtype, np.number)]
+    sensor_cols = [col for col in df_train.columns if col not in exclude and pd.api.types.is_numeric_dtype(df_train[col])]
 
     df_train_scaled[sensor_cols] = df_train_scaled[sensor_cols].astype("float64")
     df_test_scaled[sensor_cols] = df_test_scaled[sensor_cols].astype("float64")
